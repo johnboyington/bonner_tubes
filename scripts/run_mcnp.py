@@ -1,5 +1,6 @@
 import numpy as np
 from mcnp_template import template
+from source_template import rf_source, ir_source
 from multigroup_utilities import energy_groups
 import subprocess
 import re
@@ -31,7 +32,7 @@ def filter_generator(filter_type, n, fil=False):
     return j
 
 
-def write_input(name, erg_bounds, mat, foils, length, template, fil=''):
+def write_input(name, erg_bounds, mat, foils, length, template, job_type, fil=''):
     """Writes an mcnp input file."""
     foil = {}
     foil['Au'] = (9, 19.30)
@@ -50,10 +51,14 @@ def write_input(name, erg_bounds, mat, foils, length, template, fil=''):
     j = filter_generator(fil, n, bool(fil))
 
     # handle source term if used to calc rf or activity
-    src_bounds = '{:8.6e} {:8.6e}'.format(*erg_bounds)
-    src_prob = '0 1'
+    if job_type == 'rf':
+        src_bounds = '{:8.6e} {:8.6e}'.format(*erg_bounds)
+        src_prob = '0 1'
+        source = rf_source.format(src_bounds, src_prob)
+    elif job_type == 'ir':
+        source = ir_source
 
-    template = template.format(*mats[mat], *foil[foils], j, p, *lengths, s, src_bounds, src_prob, foil[foils][0])
+    template = template.format(*mats[mat], *foil[foils], j, p, *lengths, s, source, foil[foils][0])
     with open(name + '.i', 'w+') as F:
         F.write(template)
     return
@@ -90,8 +95,11 @@ def clean_repo(name):
 
 def run_mcnp(job, template, inp_only=False):
     """Runs all the functions given in this repo."""
-    mcnp_name = job.name + str(job.group_number)
-    write_input(mcnp_name, job.eb, job.plug_material, job.foil_material, job.length, template, job.filter_material)
+    if job.job_type == 'rf':
+        mcnp_name = job.name + str(job.group_number)
+    else:
+        mcnp_name = job.name
+    write_input(mcnp_name, job.eb, job.plug_material, job.foil_material, job.length, template, job.job_type, job.filter_material)
     if not inp_only:
         run_input(mcnp_name)
         val, err = extract_output(mcnp_name)
