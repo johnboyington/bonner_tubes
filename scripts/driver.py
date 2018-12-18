@@ -32,7 +32,7 @@ class Filter_Job(object):
 
         # if integral response type, assign placeholder erg values
         if self.job_type == 'ir':
-            self.group_structure = 'irstruct'
+            self.group_structure = 'scale252'
             self.group_number = 0
             self.eb = (0, 0)
 
