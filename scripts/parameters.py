@@ -21,3 +21,4 @@ params['filters'] = ['', 'Cd']
 # the energy group structure
 params['group_structure'] = 'scale252'
 params['eb'] = energy_groups(params['group_structure'])[::-1]*1e-6
+params['ir_eb'] = energy_groups(params['group_structure'])[::-1]*1e-6
