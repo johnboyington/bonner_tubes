@@ -48,7 +48,12 @@ def write_input(name, erg_bounds, mat, foils, length, template, fil=''):
     n = 8
     p, s = cut_generator(length, n, mats[mat])
     j = filter_generator(fil, n, bool(fil))
-    template = template.format(*mats[mat], *foil[foils], j, p, *lengths, s, *erg_bounds, foil[foils][0])
+
+    # handle source term if used to calc rf or activity
+    src_bounds = '{:8.6e} {:8.6e}'.format(*erg_bounds)
+    src_prob = '0 1'
+
+    template = template.format(*mats[mat], *foil[foils], j, p, *lengths, s, src_bounds, src_prob, foil[foils][0])
     with open(name + '.i', 'w+') as F:
         F.write(template)
     return
